@@ -155,7 +155,7 @@ public class Controller {
     public static Thread init (double mscv, double gen, double demande){
          Thread thread= new Thread(() -> {
             try {
-                Thread.sleep(20000);
+                Thread.sleep(40000);
                 if (gen - demande > 70){
                     api.postVariable("MSCV_0_OPENING_ORDERED", String.valueOf(mscv - 1));
                     api.postVariable("MSCV_1_OPENING_ORDERED", String.valueOf(mscv - 1));
