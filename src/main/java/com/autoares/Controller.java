@@ -9,9 +9,10 @@ import java.util.Objects;
 public class Controller {
     public static WebAPI api;
     public static double demanded_old = -1.0;
-    public AudioClip meltdown = new AudioClip(Objects.requireNonNull(getClass().getResource("/MELTDOWN.wav")).toString());;
+    public AudioClip meltdown = new AudioClip(Objects.requireNonNull(getClass().getResource("/MELTDOWN.wav")).toString());
+    private Thread compensateur;
     Thread mesure = new Thread(() -> {
-        // simple thred for mapping the central 
+        // simple thread for mapping the central
         try {
             for (int mscv = 10; mscv < 56 ; mscv++) {
                 api.postVariable("MSCV_0_OPENING_ORDERED", String.valueOf(mscv));
@@ -37,9 +38,9 @@ public class Controller {
             }
 
         } catch (Exception e) {
-            e.printStackTrace(); // ✅ Affiche l'erreur du thread
+            e.printStackTrace();
         }
-    });;
+    });
     public static void main(String[] args) {
         api = new WebAPI(new Controller(), true);
     }
@@ -122,10 +123,22 @@ public class Controller {
 //                    mesure.start();
 //                }
                 if (demande != demanded_old){
+                    if (compensateur != null){
+                        if (compensateur.isAlive()){
+                            compensateur.interrupt();
+                            try {
+                                compensateur.join();
+                            } catch (InterruptedException e) {
+                                System.err.println("Compensateur interrupted" + e.getMessage());
+                            }
+                        }
+                    }
                     api.postVariable("MSCV_0_OPENING_ORDERED", String.valueOf(calculerMSCV(demande)));
                     api.postVariable("MSCV_1_OPENING_ORDERED", String.valueOf(calculerMSCV(demande)));
                     api.postVariable("MSCV_2_OPENING_ORDERED", String.valueOf(calculerMSCV(demande)));
                     demanded_old = demande;
+                    compensateur = init(mscv1, gen, demande);
+                    compensateur.start();
                 }
             }
         }else{
@@ -138,6 +151,25 @@ public class Controller {
                 api.postVariable("CONDENSER_CIRCULATION_PUMP_ORDERED_SPEED", "100");
             }
         }
+    }
+    public static Thread init (double mscv, double gen, double demande){
+         Thread thread= new Thread(() -> {
+            try {
+                Thread.sleep(20000);
+                if (gen - demande > 70){
+                    api.postVariable("MSCV_0_OPENING_ORDERED", String.valueOf(calculerMSCV(mscv - 1)));
+                    api.postVariable("MSCV_1_OPENING_ORDERED", String.valueOf(calculerMSCV(mscv - 1)));
+                    api.postVariable("MSCV_2_OPENING_ORDERED", String.valueOf(calculerMSCV(mscv - 1)));
+                }else if (gen - demande < 0){
+                    api.postVariable("MSCV_0_OPENING_ORDERED", String.valueOf(calculerMSCV(mscv + 1)));
+                    api.postVariable("MSCV_1_OPENING_ORDERED", String.valueOf(calculerMSCV(mscv + 1)));
+                    api.postVariable("MSCV_2_OPENING_ORDERED", String.valueOf(calculerMSCV(mscv + 1)));
+                }
+            } catch (InterruptedException e) {
+                System.err.println(e.getMessage() + " DEAD in Slepp");
+            }
+        });
+         return thread;
     }
     public static double calculerMSCV(double valeur) {
         double a = -0.3968;
@@ -171,7 +203,6 @@ public class Controller {
         if (decimalPart >= 0.75) {
             solution = Math.floor(solution) + 1;
         }
-
         return solution - 1;
     }
 }
