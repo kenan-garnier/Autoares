@@ -137,7 +137,7 @@ public class Controller {
                     api.postVariable("MSCV_1_OPENING_ORDERED", String.valueOf(calculerMSCV(demande)));
                     api.postVariable("MSCV_2_OPENING_ORDERED", String.valueOf(calculerMSCV(demande)));
                     demanded_old = demande;
-                    compensateur = init(mscv1, gen, demande);
+                    compensateur = init(calculerMSCV(demande), gen, demande);
                     compensateur.start();
                 }
             }
@@ -157,13 +157,13 @@ public class Controller {
             try {
                 Thread.sleep(20000);
                 if (gen - demande > 70){
-                    api.postVariable("MSCV_0_OPENING_ORDERED", String.valueOf(calculerMSCV(mscv - 1)));
-                    api.postVariable("MSCV_1_OPENING_ORDERED", String.valueOf(calculerMSCV(mscv - 1)));
-                    api.postVariable("MSCV_2_OPENING_ORDERED", String.valueOf(calculerMSCV(mscv - 1)));
+                    api.postVariable("MSCV_0_OPENING_ORDERED", String.valueOf(mscv - 1));
+                    api.postVariable("MSCV_1_OPENING_ORDERED", String.valueOf(mscv - 1));
+                    api.postVariable("MSCV_2_OPENING_ORDERED", String.valueOf(mscv - 1));
                 }else if (gen - demande < 0){
-                    api.postVariable("MSCV_0_OPENING_ORDERED", String.valueOf(calculerMSCV(mscv + 1)));
-                    api.postVariable("MSCV_1_OPENING_ORDERED", String.valueOf(calculerMSCV(mscv + 1)));
-                    api.postVariable("MSCV_2_OPENING_ORDERED", String.valueOf(calculerMSCV(mscv + 1)));
+                    api.postVariable("MSCV_0_OPENING_ORDERED", String.valueOf(mscv + 1));
+                    api.postVariable("MSCV_1_OPENING_ORDERED", String.valueOf(mscv + 1));
+                    api.postVariable("MSCV_2_OPENING_ORDERED", String.valueOf(mscv + 1));
                 }
             } catch (InterruptedException e) {
                 System.err.println(e.getMessage() + " DEAD in Slepp");
