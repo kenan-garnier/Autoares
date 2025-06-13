@@ -156,14 +156,18 @@ public class Controller {
          Thread thread= new Thread(() -> {
             try {
                 Thread.sleep(40000);
-                if (gen - demande > 70){
+                if (gen - demande > 80){
                     api.postVariable("MSCV_0_OPENING_ORDERED", String.valueOf(mscv - 1));
                     api.postVariable("MSCV_1_OPENING_ORDERED", String.valueOf(mscv - 1));
                     api.postVariable("MSCV_2_OPENING_ORDERED", String.valueOf(mscv - 1));
+                    System.out.println("Correction - Demand = " + Math.abs(demande-gen) + "MW MSCV " + mscv );
                 }else if (gen - demande < 0){
                     api.postVariable("MSCV_0_OPENING_ORDERED", String.valueOf(mscv + 1));
                     api.postVariable("MSCV_1_OPENING_ORDERED", String.valueOf(mscv + 1));
                     api.postVariable("MSCV_2_OPENING_ORDERED", String.valueOf(mscv + 1));
+                    System.out.println("Correction + Demand = " + Math.abs(demande-gen) + "MW MSCV " + mscv );
+                }else{
+                    System.out.println("No Correction");
                 }
             } catch (InterruptedException e) {
                 System.err.println(e.getMessage() + " DEAD in Slepp");
